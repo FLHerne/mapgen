@@ -1,4 +1,5 @@
 from PIL import Image
+from constants import *
 import random
 
 class TerrainType:
@@ -81,32 +82,55 @@ def genFixedRatioMap(in_map, out_map, value, ratio, **relate):
                 continue
             out_map.data[i] = value
 
-MAPSIZE = 256 #obvious
-LAND_AMOUNT = 0.5 #^^
-LAND_WIBBLE_BASE = 60 #Large-scale wibbliness
-LAND_WIBBLE_SCALE = 1.5 #Small-scale wibbliness (smaller is more wibbly).
+def genStreams(height_map, terrain_map, number):
+    assert height_map.size == terrain_map.size
+    
+    def neighbours(in_map, x, y):
+        def pvt(i,j):
+            return (in_map.get(i,j),(i,j))
+        return [pvt(x-1,y), pvt(x,y-1), pvt(x+1,y), pvt(x,y+1)]
+    
+    streams_created = 0
+    while streams_created < number:
+        t_x = random.randint(0, terrain_map.size)
+        t_y = random.randint(0, terrain_map.size)
+        if terrain_map.get(t_x, t_y) != TerrainType.WATER:
+            continue
+        nbr_terrain = neighbours(terrain_map, t_x, t_y)
+        if [item[0] for item in nbr_terrain].count(TerrainType.WATER) == 4:
+            continue
+        while True:
+            nbr_heights = neighbours(height_map, t_x, t_y)
+            nbr_heights.sort()
+            valid_nbrs = filter(lambda n: n[0] >= terrain_map.get(t_x, t_y) and terrain_map.get(*n[1]) != TerrainType.WATER, nbr_heights)
+            if len(valid_nbrs) == 0:
+                break
+            t_x = valid_nbrs[0][1][0]
+            t_y = valid_nbrs[0][1][1]
+            terrain_map.put(t_x, t_y, TerrainType.WATER)
+        streams_created += 1
 
-TREE_AMOUNT = 0.2
-TREE_WIBBLE_BASE = 10
-TREE_WIBBLE_SCALE = 0.8
 
-heightmap = genTerrainMap(MAPSIZE, LAND_WIBBLE_BASE, LAND_WIBBLE_SCALE)
-terrainmap = SquareMap(MAPSIZE)
-genFixedRatioMap(heightmap, terrainmap, TerrainType.GRASS, LAND_AMOUNT)
-treemap = genTerrainMap(MAPSIZE, TREE_WIBBLE_BASE, TREE_WIBBLE_SCALE)
-genFixedRatioMap(treemap, terrainmap, TerrainType.TREES, TREE_AMOUNT, avoid=[TerrainType.WATER])
+height_map = genTerrainMap(MAP_SIZE, LAND_WIBBLE_BASE, LAND_WIBBLE_SCALE)
+terrain_map = SquareMap(MAP_SIZE)
+genFixedRatioMap(height_map, terrain_map, TerrainType.GRASS, LAND_AMOUNT)
+treemap = genTerrainMap(MAP_SIZE, TREE_WIBBLE_BASE, TREE_WIBBLE_SCALE)
+genFixedRatioMap(treemap, terrain_map, TerrainType.TREES, TREE_AMOUNT, avoid=[TerrainType.WATER])
+genStreams(height_map, terrain_map, NUM_STREAMS)
 
-
-img = Image.new( 'RGB', (MAPSIZE,MAPSIZE), "black")
+img = Image.new('RGB',(MAP_SIZE,MAP_SIZE),"black")
 pixels = img.load()
 
-for i in range(img.size[0]):
-    for j in range(img.size[1]):
-        if terrainmap.get(i,j) == TerrainType.WATER:
+for i in range(MAP_SIZE):
+    for j in range(MAP_SIZE):
+        if terrain_map.get(i,j) == TerrainType.WATER:
             pixels[i,j] = (0,0,255)
-        elif terrainmap.get(i,j) == TerrainType.GRASS:
+        elif terrain_map.get(i,j) == TerrainType.PLANK:
+            pixels[i,j] = (255,0,0)
+        elif terrain_map.get(i,j) == TerrainType.GRASS:
             pixels[i,j] = (0,255,0)
-        elif terrainmap.get(i,j) == TerrainType.TREES:
+        elif terrain_map.get(i,j) == TerrainType.TREES:
             pixels[i,j] = (64,127,64)
+
 
 img.save("out.png")
