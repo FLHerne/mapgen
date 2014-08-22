@@ -83,12 +83,12 @@ def genFixedRatioMap(in_map, out_map, value, ratio, **relate):
     assert in_map.size == out_map.size
     values = list(in_map.data)
     values.sort()
-    threshold = values[int(ratio * in_map.size**2)]
-    
+    threshold = values[255 - int(ratio * in_map.size**2)]
     for i in range(in_map.size**2):
-        if in_map.data[i] < threshold:
+        if in_map.data[i] > threshold:
             if testRelIndex(i, out_map, **relate):
                 out_map.data[i] = value
+    return  threshold
 
 def genStreams(height_map, terrain_map, number):
     assert height_map.size == terrain_map.size
