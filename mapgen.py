@@ -131,27 +131,31 @@ genFixedRatioMap(detail_map, terrain_map, TerrainType.TREES, TREE_AMOUNT, avoid=
 genStreams(height_map, terrain_map, NUM_STREAMS)
 
 
-img = Image.new('RGB',(MAP_SIZE,MAP_SIZE),"black")
-pixels = img.load()
+terrain_img = Image.new('RGB',(MAP_SIZE,MAP_SIZE),"black")
+t_pixels = terrain_img.load()
+heightmap_img = Image.new('L',(MAP_SIZE,MAP_SIZE),"black")
+h_pixels = heightmap_img.load()
 
 for i in range(MAP_SIZE):
     for j in range(MAP_SIZE):
+        h_pixels[i,j] = height_map.get(i,j)
         if terrain_map.get(i,j) == TerrainType.WATER:
-            pixels[i,j] = (0,0,255)
+            t_pixels[i,j] = (0,0,255)
         elif terrain_map.get(i,j) == TerrainType.GRASS:
-            pixels[i,j] = (0,255,0)
+            t_pixels[i,j] = (0,255,0)
         elif terrain_map.get(i,j) == TerrainType.SANDY:
-            pixels[i,j] = (127,127,0)
+            t_pixels[i,j] = (127,127,0)
         elif terrain_map.get(i,j) == TerrainType.SNOWY:
-            pixels[i,j] = (255,255,255)
+            t_pixels[i,j] = (255,255,255)
         elif terrain_map.get(i,j) == TerrainType.TREES:
-            pixels[i,j] = (64,127,64)
+            t_pixels[i,j] = (64,127,64)
         elif terrain_map.get(i,j) == TerrainType.PLANK:
-            pixels[i,j] = (127,127,127)
+            t_pixels[i,j] = (127,127,127)
         elif terrain_map.get(i,j) == TerrainType.FLOOR:
-            pixels[i,j] = (255,255,127)
+            t_pixels[i,j] = (255,255,127)
         elif terrain_map.get(i,j) == TerrainType.WALLS:
-            pixels[i,j] = (0,0,0)
+            t_pixels[i,j] = (0,0,0)
         elif terrain_map.get(i,j) == TerrainType.GLASS:
-            pixels[i,j] = (0,255,255)
-img.save("out.png")
+            t_pixels[i,j] = (0,255,255)
+terrain_img.save("terrain.png")
+heightmap_img.save("heightmap.png")
