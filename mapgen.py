@@ -129,8 +129,8 @@ waterline = genFixedRatioMap(height_map, terrain_map, TerrainType.GRASS, LAND_AM
 detail_map = genTerrainMap(MAP_SIZE, DETAIL_WIBBLE_BASE, DETAIL_WIBBLE_SCALE)
 genFixedRatioMap(detail_map, terrain_map, TerrainType.SANDY, SAND_AMOUNT, req_omap=[(height_map,[waterline,waterline+1])])
 genFixedRatioMap(detail_map, terrain_map, TerrainType.SNOWY, SNOW_AMOUNT, req_omap=[(height_map,range(waterline+SNOWLINE,256))])
-genFixedRatioMap(detail_map, terrain_map, TerrainType.TREES, TREE_AMOUNT, avoid=[TerrainType.DEEPW, TerrainType.WATER, TerrainType.SANDY])
-#genStreams(height_map, terrain_map, NUM_STREAMS)
+genFixedRatioMap(detail_map, terrain_map, TerrainType.TREES, TREE_AMOUNT, require=[TerrainType.GRASS, TerrainType.SNOWY])
+genStreams(height_map, terrain_map, NUM_STREAMS)
 
 terrain_img = Image.new('RGB',(MAP_SIZE,MAP_SIZE),"black")
 t_pixels = terrain_img.load()
