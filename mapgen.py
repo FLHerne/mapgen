@@ -5,6 +5,7 @@ import random
 class TerrainType:
     DEEPW = 0
     WATER = 9
+    ROCKS = 10
     GRASS = 1
     SANDY = 2
     SNOWY = 3
@@ -144,6 +145,8 @@ for i in range(MAP_SIZE):
             t_pixels[i,j] = (0,0,255)
         elif terrain_map.get(i,j) == TerrainType.WATER:
             t_pixels[i,j] = (0,127,255)
+        elif terrain_map.get(i,j) == TerrainType.ROCKS:
+            t_pixels[i,j] = (127,127,127)
         elif terrain_map.get(i,j) == TerrainType.GRASS:
             t_pixels[i,j] = (0,255,0)
         elif terrain_map.get(i,j) == TerrainType.SANDY:
@@ -153,7 +156,7 @@ for i in range(MAP_SIZE):
         elif terrain_map.get(i,j) == TerrainType.TREES:
             t_pixels[i,j] = (64,127,64)
         elif terrain_map.get(i,j) == TerrainType.PLANK:
-            t_pixels[i,j] = (127,127,127)
+            t_pixels[i,j] = (127,64,0)
         elif terrain_map.get(i,j) == TerrainType.FLOOR:
             t_pixels[i,j] = (255,255,127)
         elif terrain_map.get(i,j) == TerrainType.WALLS:
