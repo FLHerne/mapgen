@@ -3,7 +3,8 @@ from constants import *
 import random
 
 class TerrainType:
-    WATER = 0
+    DEEPW = 0
+    WATER = 9
     GRASS = 1
     SANDY = 2
     SNOWY = 3
@@ -123,13 +124,13 @@ def genStreams(height_map, terrain_map, number):
 
 height_map = genTerrainMap(MAP_SIZE, LAND_WIBBLE_BASE, LAND_WIBBLE_SCALE)
 terrain_map = SquareMap(MAP_SIZE)
+genFixedRatioMap(height_map, terrain_map, TerrainType.WATER, LAND_AMOUNT+(1-LAND_AMOUNT)*(1-DEEP_AMOUNT))
 waterline = genFixedRatioMap(height_map, terrain_map, TerrainType.GRASS, LAND_AMOUNT)
 detail_map = genTerrainMap(MAP_SIZE, DETAIL_WIBBLE_BASE, DETAIL_WIBBLE_SCALE)
 genFixedRatioMap(detail_map, terrain_map, TerrainType.SANDY, SAND_AMOUNT, req_omap=[(height_map,[waterline,waterline+1])])
 genFixedRatioMap(detail_map, terrain_map, TerrainType.SNOWY, SNOW_AMOUNT, req_omap=[(height_map,range(waterline+SNOWLINE,256))])
-genFixedRatioMap(detail_map, terrain_map, TerrainType.TREES, TREE_AMOUNT, avoid=[TerrainType.WATER, TerrainType.SANDY])
-genStreams(height_map, terrain_map, NUM_STREAMS)
-
+genFixedRatioMap(detail_map, terrain_map, TerrainType.TREES, TREE_AMOUNT, avoid=[TerrainType.DEEPW, TerrainType.WATER, TerrainType.SANDY])
+#genStreams(height_map, terrain_map, NUM_STREAMS)
 
 terrain_img = Image.new('RGB',(MAP_SIZE,MAP_SIZE),"black")
 t_pixels = terrain_img.load()
@@ -139,8 +140,10 @@ h_pixels = heightmap_img.load()
 for i in range(MAP_SIZE):
     for j in range(MAP_SIZE):
         h_pixels[i,j] = height_map.get(i,j)
-        if terrain_map.get(i,j) == TerrainType.WATER:
+        if terrain_map.get(i,j) == TerrainType.DEEPW:
             t_pixels[i,j] = (0,0,255)
+        elif terrain_map.get(i,j) == TerrainType.WATER:
+            t_pixels[i,j] = (0,127,255)
         elif terrain_map.get(i,j) == TerrainType.GRASS:
             t_pixels[i,j] = (0,255,0)
         elif terrain_map.get(i,j) == TerrainType.SANDY:
