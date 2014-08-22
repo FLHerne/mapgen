@@ -68,6 +68,17 @@ def genTerrainMap(size, base_wibble, wibble_scale):
     
     return values
 
+def testRelIndex(index, out_map, **relate):
+    if ('require' in relate) and not (out_map.data[index] in relate['require']):
+        return False
+    if ('avoid' in relate) and (out_map.data[index] in relate['avoid']):
+        return False
+    if 'req_omap' in relate and not all(n[0].data[index] in n[1] for n in relate['req_omap']):
+        return False
+    if 'avd_omap' in relate and any(n[0].data[index] in n[1] for n in relate['avd_omap']):
+        return False
+    return True
+
 def genFixedRatioMap(in_map, out_map, value, ratio, **relate):
     assert in_map.size == out_map.size
     values = list(in_map.data)
@@ -76,11 +87,8 @@ def genFixedRatioMap(in_map, out_map, value, ratio, **relate):
     
     for i in range(in_map.size**2):
         if in_map.data[i] < threshold:
-            if ('require' in relate) and not (out_map.data[i] in relate['require']):
-                continue
-            if ('avoid' in relate) and (out_map.data[i] in relate['avoid']):
-                continue
-            out_map.data[i] = value
+            if testRelIndex(i, out_map, **relate):
+                out_map.data[i] = value
 
 def genStreams(height_map, terrain_map, number):
     assert height_map.size == terrain_map.size
