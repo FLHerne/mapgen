@@ -110,7 +110,7 @@ def genStreams(height_map, terrain_map, number):
         while True:
             nbr_heights = neighbours(height_map, t_x, t_y)
             nbr_heights.sort()
-            valid_nbrs = filter(lambda n: n[0] >= terrain_map.get(t_x, t_y) and terrain_map.get(*n[1]) != TerrainType.WATER, nbr_heights)
+            valid_nbrs = filter(lambda n: n[0] >= height_map.get(t_x, t_y) and terrain_map.get(*n[1]) != TerrainType.WATER, nbr_heights)
             if len(valid_nbrs) == 0:
                 break
             t_x = valid_nbrs[0][1][0]
