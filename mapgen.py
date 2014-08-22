@@ -5,10 +5,13 @@ import random
 class TerrainType:
     WATER = 0
     GRASS = 1
-    TREES = 2
-    PLANK = 3
-    BRICK = 4
-    GLASS = 5
+    SANDY = 2
+    SNOWY = 3
+    TREES = 4
+    PLANK = 5
+    FLOOR = 6
+    WALLS = 7
+    GLASS = 8
 
 class SquareMap:
     def __init__(self, size):
@@ -85,7 +88,7 @@ def genFixedRatioMap(in_map, out_map, value, ratio, **relate):
     values.sort()
     threshold = values[255 - int(ratio * in_map.size**2)]
     for i in range(in_map.size**2):
-        if in_map.data[i] > threshold:
+        if in_map.data[i] >= threshold:
             if testRelIndex(i, out_map, **relate):
                 out_map.data[i] = value
     return  threshold
@@ -118,13 +121,15 @@ def genStreams(height_map, terrain_map, number):
             terrain_map.put(t_x, t_y, TerrainType.WATER)
         streams_created += 1
 
-
 height_map = genTerrainMap(MAP_SIZE, LAND_WIBBLE_BASE, LAND_WIBBLE_SCALE)
 terrain_map = SquareMap(MAP_SIZE)
-genFixedRatioMap(height_map, terrain_map, TerrainType.GRASS, LAND_AMOUNT)
-treemap = genTerrainMap(MAP_SIZE, TREE_WIBBLE_BASE, TREE_WIBBLE_SCALE)
-genFixedRatioMap(treemap, terrain_map, TerrainType.TREES, TREE_AMOUNT, avoid=[TerrainType.WATER])
+waterline = genFixedRatioMap(height_map, terrain_map, TerrainType.GRASS, LAND_AMOUNT)
+detail_map = genTerrainMap(MAP_SIZE, DETAIL_WIBBLE_BASE, DETAIL_WIBBLE_SCALE)
+genFixedRatioMap(detail_map, terrain_map, TerrainType.SANDY, SAND_AMOUNT, req_omap=[(height_map,[waterline,waterline+1])])
+genFixedRatioMap(detail_map, terrain_map, TerrainType.SNOWY, SNOW_AMOUNT, req_omap=[(height_map,range(waterline+SNOWLINE,256))])
+genFixedRatioMap(detail_map, terrain_map, TerrainType.TREES, TREE_AMOUNT, avoid=[TerrainType.WATER, TerrainType.SANDY])
 genStreams(height_map, terrain_map, NUM_STREAMS)
+
 
 img = Image.new('RGB',(MAP_SIZE,MAP_SIZE),"black")
 pixels = img.load()
@@ -133,12 +138,20 @@ for i in range(MAP_SIZE):
     for j in range(MAP_SIZE):
         if terrain_map.get(i,j) == TerrainType.WATER:
             pixels[i,j] = (0,0,255)
-        elif terrain_map.get(i,j) == TerrainType.PLANK:
-            pixels[i,j] = (255,0,0)
         elif terrain_map.get(i,j) == TerrainType.GRASS:
             pixels[i,j] = (0,255,0)
+        elif terrain_map.get(i,j) == TerrainType.SANDY:
+            pixels[i,j] = (127,127,0)
+        elif terrain_map.get(i,j) == TerrainType.SNOWY:
+            pixels[i,j] = (255,255,255)
         elif terrain_map.get(i,j) == TerrainType.TREES:
             pixels[i,j] = (64,127,64)
-
-
+        elif terrain_map.get(i,j) == TerrainType.PLANK:
+            pixels[i,j] = (127,127,127)
+        elif terrain_map.get(i,j) == TerrainType.FLOOR:
+            pixels[i,j] = (255,255,127)
+        elif terrain_map.get(i,j) == TerrainType.WALLS:
+            pixels[i,j] = (0,0,0)
+        elif terrain_map.get(i,j) == TerrainType.GLASS:
+            pixels[i,j] = (0,255,255)
 img.save("out.png")
