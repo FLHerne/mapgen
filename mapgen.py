@@ -149,7 +149,7 @@ genFixedRatioMap(rock_sand_map, terrain_map, TerrainType.SANDY, SAND_AMOUNT, req
 # Scatter/clump map for bogs
 bog_map = genTerrainMap(MAP_SIZE, BOG_WIBBLE_BASE, BOG_WIBBLE_SCALE)
 # Create bogs
-genFixedRatioMap(bog_map, terrain_map, TerrainType.BOGGY, BOG_AMOUNT, avoid=[TerrainType.ROCKS],  req_omap=[(height_map,range(waterline-1,waterline+3))])
+genFixedRatioMap(bog_map, terrain_map, TerrainType.BOGGY, BOG_AMOUNT, avoid=[TerrainType.ROCKS],  req_omap=[(height_map,range(waterline-BOG_MAX_DEPTH, waterline+BOG_MAX_HEIGHT))])
 # Create rivers/streams
 genStreams(height_map, terrain_map, NUM_STREAMS)
 
