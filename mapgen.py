@@ -6,6 +6,7 @@ class TerrainType:
     DEEPW = 0
     WATER = 9
     ROCKS = 10
+    BOGGY = 11
     GRASS = 1
     SANDY = 2
     SNOWY = 3
@@ -145,6 +146,10 @@ genFixedRatioMap(tree_snow_map, terrain_map, TerrainType.TREES, TREE_AMOUNT_GRAS
 genFixedRatioMap(tree_snow_map, terrain_map, TerrainType.TREES, TREE_AMOUNT_SNOW, require=[TerrainType.SNOWY])
 # Create beaches
 genFixedRatioMap(rock_sand_map, terrain_map, TerrainType.SANDY, SAND_AMOUNT, req_omap=[(height_map,[waterline,waterline+1])])
+# Scatter/clump map for bogs
+bog_map = genTerrainMap(MAP_SIZE, BOG_WIBBLE_BASE, BOG_WIBBLE_SCALE)
+# Create bogs
+genFixedRatioMap(bog_map, terrain_map, TerrainType.BOGGY, BOG_AMOUNT, avoid=[TerrainType.ROCKS],  req_omap=[(height_map,range(waterline-1,waterline+3))])
 # Create rivers/streams
 genStreams(height_map, terrain_map, NUM_STREAMS)
 
@@ -162,6 +167,8 @@ for i in range(MAP_SIZE):
             t_pixels[i,j] = (0,127,255)
         elif terrain_map.get(i,j) == TerrainType.ROCKS:
             t_pixels[i,j] = (127,127,127)
+        elif terrain_map.get(i,j) == TerrainType.BOGGY:
+            t_pixels[i,j] = (64,127,127)
         elif terrain_map.get(i,j) == TerrainType.GRASS:
             t_pixels[i,j] = (0,255,0)
         elif terrain_map.get(i,j) == TerrainType.SANDY:
