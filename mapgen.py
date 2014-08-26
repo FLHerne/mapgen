@@ -137,25 +137,25 @@ genFixedRatioMap(height_map, terrain_map, TerrainType.WATER, LAND_AMOUNT+(1-LAND
 waterline = genFixedRatioMap(height_map, terrain_map, TerrainType.GRASS, LAND_AMOUNT)
 
 # Generate snow
-snow_scatter_map = genTerrainMap(MAP_SIZE, SNOW_WIBBLE_BASE, SNOW_WIBBLE_SCALE)
+snow_scatter_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, SNOW_WIBBLE_SCALE)
 genFixedRatioMap(snow_scatter_map, terrain_map, TerrainType.SNOWY, SNOW_AMOUNT, req_omap=[(height_map,range(waterline+SNOW_MIN_HEIGHT,256))])
 
 # Generate rocks (on grass, snow and shallow water)
-rock_scatter_map = genTerrainMap(MAP_SIZE, ROCK_WIBBLE_BASE, ROCK_WIBBLE_SCALE)
+rock_scatter_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, ROCK_WIBBLE_SCALE)
 genFixedRatioMap(rock_scatter_map, terrain_map, TerrainType.ROCKS, ROCK_AMOUNT_GRASS, require=[TerrainType.GRASS])
 genFixedRatioMap(rock_scatter_map, terrain_map, TerrainType.ROCKS, ROCK_AMOUNT_SNOW, require=[TerrainType.SNOWY])
 genFixedRatioMap(rock_scatter_map, terrain_map, TerrainType.ROCKS, ROCK_AMOUNT_WATER, require=[TerrainType.WATER])
 
 # Generate sandy beaches
-sand_scatter_map = genTerrainMap(MAP_SIZE, SAND_WIBBLE_BASE, SAND_WIBBLE_SCALE)
+sand_scatter_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, SAND_WIBBLE_SCALE)
 genFixedRatioMap(sand_scatter_map, terrain_map, TerrainType.SANDY, SAND_AMOUNT, avoid=[TerrainType.ROCKS], req_omap=[(height_map,[waterline,waterline+1])])
 
 # Generate bogs
-bog_map = genTerrainMap(MAP_SIZE, BOG_WIBBLE_BASE, BOG_WIBBLE_SCALE)
+bog_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, BOG_WIBBLE_SCALE)
 genFixedRatioMap(bog_map, terrain_map, TerrainType.BOGGY, BOG_AMOUNT, avoid=[TerrainType.ROCKS], req_omap=[(height_map,range(waterline-BOG_MAX_DEPTH, waterline+BOG_MAX_HEIGHT))])
 
 # Generate trees (on grass and snow)
-tree_scatter_map = genTerrainMap(MAP_SIZE, TREE_WIBBLE_BASE, TREE_WIBBLE_SCALE)
+tree_scatter_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, TREE_WIBBLE_SCALE)
 genFixedRatioMap(tree_scatter_map, terrain_map, TerrainType.TREES, TREE_AMOUNT_GRASS, require=[TerrainType.GRASS])
 genFixedRatioMap(tree_scatter_map, terrain_map, TerrainType.TREES, TREE_AMOUNT_SNOW, require=[TerrainType.SNOWY])
 
