@@ -126,33 +126,41 @@ def genStreams(height_map, terrain_map, number):
 
 # Heightmap for world
 height_map = genTerrainMap(MAP_SIZE, LAND_WIBBLE_BASE, LAND_WIBBLE_SCALE)
-# Map of terrain for world - initially all TerrainType.DEEPW
+
+# Blank map of terrain for world - initially all deep water
 terrain_map = SquareMap(MAP_SIZE)
-# Create normal-depth water
+
+# Generate normal-depth water
 genFixedRatioMap(height_map, terrain_map, TerrainType.WATER, LAND_AMOUNT+(1-LAND_AMOUNT)*(1-DEEP_WATER_AMOUNT))
-# Create land
+
+# Generate grass
 waterline = genFixedRatioMap(height_map, terrain_map, TerrainType.GRASS, LAND_AMOUNT)
-# Scatter/clump map for trees and snow
-tree_snow_map = genTerrainMap(MAP_SIZE, TREE_WIBBLE_BASE, TREE_WIBBLE_SCALE)
-# Create snow
-genFixedRatioMap(tree_snow_map, terrain_map, TerrainType.SNOWY, SNOW_AMOUNT, req_omap=[(height_map,range(waterline+SNOWLINE,256))])
-# Scatter/clump map for rocks and sand
-rock_sand_map = genTerrainMap(MAP_SIZE, ROCK_WIBBLE_BASE, ROCK_WIBBLE_SCALE)
-# Create rocks (on grass, snow and shallow water)
-genFixedRatioMap(rock_sand_map, terrain_map, TerrainType.ROCKS, ROCK_AMOUNT_GRASS, require=[TerrainType.GRASS])
-genFixedRatioMap(rock_sand_map, terrain_map, TerrainType.ROCKS, ROCK_AMOUNT_SNOW, require=[TerrainType.SNOWY])
-genFixedRatioMap(rock_sand_map, terrain_map, TerrainType.ROCKS, ROCK_AMOUNT_WATER, require=[TerrainType.WATER])
-# Create trees (on grass, then snow)
-genFixedRatioMap(tree_snow_map, terrain_map, TerrainType.TREES, TREE_AMOUNT_GRASS, require=[TerrainType.GRASS])
-genFixedRatioMap(tree_snow_map, terrain_map, TerrainType.TREES, TREE_AMOUNT_SNOW, require=[TerrainType.SNOWY])
-# Create beaches
-genFixedRatioMap(rock_sand_map, terrain_map, TerrainType.SANDY, SAND_AMOUNT, avoid=[TerrainType.ROCKS], req_omap=[(height_map,[waterline,waterline+1])])
-# Scatter/clump map for bogs
+
+# Generate snow
+snow_scatter_map = genTerrainMap(MAP_SIZE, SNOW_WIBBLE_BASE, SNOW_WIBBLE_SCALE)
+genFixedRatioMap(snow_scatter_map, terrain_map, TerrainType.SNOWY, SNOW_AMOUNT, req_omap=[(height_map,range(waterline+SNOW_MIN_HEIGHT,256))])
+
+# Generate rocks (on grass, snow and shallow water)
+rock_scatter_map = genTerrainMap(MAP_SIZE, ROCK_WIBBLE_BASE, ROCK_WIBBLE_SCALE)
+genFixedRatioMap(rock_scatter_map, terrain_map, TerrainType.ROCKS, ROCK_AMOUNT_GRASS, require=[TerrainType.GRASS])
+genFixedRatioMap(rock_scatter_map, terrain_map, TerrainType.ROCKS, ROCK_AMOUNT_SNOW, require=[TerrainType.SNOWY])
+genFixedRatioMap(rock_scatter_map, terrain_map, TerrainType.ROCKS, ROCK_AMOUNT_WATER, require=[TerrainType.WATER])
+
+# Generate sandy beaches
+sand_scatter_map = genTerrainMap(MAP_SIZE, SAND_WIBBLE_BASE, SAND_WIBBLE_SCALE)
+genFixedRatioMap(sand_scatter_map, terrain_map, TerrainType.SANDY, SAND_AMOUNT, avoid=[TerrainType.ROCKS], req_omap=[(height_map,[waterline,waterline+1])])
+
+# Generate bogs
 bog_map = genTerrainMap(MAP_SIZE, BOG_WIBBLE_BASE, BOG_WIBBLE_SCALE)
-# Create bogs
 genFixedRatioMap(bog_map, terrain_map, TerrainType.BOGGY, BOG_AMOUNT, avoid=[TerrainType.ROCKS], req_omap=[(height_map,range(waterline-BOG_MAX_DEPTH, waterline+BOG_MAX_HEIGHT))])
-# Create rivers/streams
-genStreams(height_map, terrain_map, NUM_STREAMS)
+
+# Generate trees (on grass and snow)
+tree_scatter_map = genTerrainMap(MAP_SIZE, TREE_WIBBLE_BASE, TREE_WIBBLE_SCALE)
+genFixedRatioMap(tree_scatter_map, terrain_map, TerrainType.TREES, TREE_AMOUNT_GRASS, require=[TerrainType.GRASS])
+genFixedRatioMap(tree_scatter_map, terrain_map, TerrainType.TREES, TREE_AMOUNT_SNOW, require=[TerrainType.SNOWY])
+
+# Generate streams
+#genStreams(height_map, terrain_map, NUM_STREAMS)
 
 terrain_img = Image.new('RGB',(MAP_SIZE,MAP_SIZE),"black")
 t_pixels = terrain_img.load()
