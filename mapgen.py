@@ -171,7 +171,7 @@ genFixedRatioMap(rock_scatter_map, terrain_map, TerrainType.ROCKS, ROCK_PROPORTI
 
 # Generate sandy beaches
 sand_scatter_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, SAND_WIBBLE_SCALE)
-genFixedRatioMap(sand_scatter_map, terrain_map, TerrainType.SANDY, SAND_PROPORTION, avoid=[TerrainType.ROCKS], req_omap=[(height_map,[waterline,waterline+1])])
+genFixedRatioMap(sand_scatter_map, terrain_map, TerrainType.SANDY, SAND_PROPORTION, avoid=[TerrainType.ROCKS], req_omap=[(height_map,range(waterline-SAND_MAX_DEPTH, waterline+SAND_MAX_HEIGHT))])
 
 # Generate bogs
 bog_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, BOG_WIBBLE_SCALE)
@@ -183,7 +183,7 @@ genFixedRatioMap(tree_scatter_map, terrain_map, TerrainType.TREES, TREE_PROPORTI
 genFixedRatioMap(tree_scatter_map, terrain_map, TerrainType.TREES, TREE_PROPORTION_SNOW, require=[TerrainType.SNOWY])
 
 # Generate streams
-#genStreams(height_map, terrain_map, NUM_STREAMS)
+genStreams(height_map, terrain_map, NUM_STREAMS)
 
 terrain_img = Image.new('RGB',(MAP_SIZE,MAP_SIZE),"black")
 t_pixels = terrain_img.load()
