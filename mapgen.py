@@ -28,7 +28,7 @@ class SquareMap:
         self.data[(y % self.size) * self.size + (x % self.size)] = val
 
 def genTerrainMap(size, base_wibble, wibble_scale):
-    if ((size & (size - 1)) == 0) and size != 0:
+    if not ((size & (size - 1)) == 0) and size != 0:
         print("MAP_SIZE must be a power of two!")
         exit(1)
     values = SquareMap(size)
@@ -90,7 +90,7 @@ def testRelIndex(index, out_map, **relate):
 
 def genFixedRatioMap(in_map, out_map, value, ratio, **relate):
     assert in_map.size == out_map.size
-    if ratio <= 1 and ratio >= 0:
+    if ratio <= 0 or ratio >= 1:
         print("*_PROPORTION constants must be between 0 and 1!")
         exit(1)
     values = list(in_map.data)
