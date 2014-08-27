@@ -13,6 +13,13 @@ LAND_WIBBLE_BASE = 40
 # Lower values produce scattered islands, rough irregular coastlines.
 LAND_WIBBLE_SCALE = 1.5
 
+# Force minimum and maximum elevation of map edges.
+EDGE_MIN = 0
+EDGE_MAX = 30
+# Force sea level upwards to cover edges?
+# Can reduce land proportion if EDGE_MAX is too high.
+FORCE_SEA_EDGES = True
+
 # Fraction of sea counted as deep water.
 DEEP_WATER_PROPORTION = 0.3
 

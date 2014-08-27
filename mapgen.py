@@ -27,22 +27,27 @@ class SquareMap:
         val = 255 if val > 255 else val
         self.data[(y % self.size) * self.size + (x % self.size)] = val
 
-def genTerrainMap(size, base_wibble, wibble_scale):
+def genTerrainMap(size, base_wibble, wibble_scale, force_edge=False, edge_range=None):
     if not ((size & (size - 1)) == 0) and size != 0:
         print("MAP_SIZE must be a power of two!")
         exit(1)
     values = SquareMap(size)
-    values.put(0,0,128)
     
     def fillSquare(x, y, scale, alt):
         mean_val = (values.get(x-scale, y-scale) + values.get(x+scale, y-scale) + values.get(x-scale, y+scale) + values.get(x+scale, y+scale)) / 4
         rand_val = mean_val + random.randint(-alt, alt)
-        values.put(x, y, rand_val)
+        if force_edge and (x == 0 or y == 0):
+            values.put(x, y, sorted(edge_range+(rand_val,))[1])
+        else:
+            values.put(x, y, rand_val)
     
     def fillDiamond(x, y, scale, alt):
         mean_val = (values.get(x-scale, y) + values.get(x, y-scale) + values.get(x+scale, y) + values.get(x, y+scale)) / 4
         rand_val = mean_val + random.randint(-alt, alt)
-        values.put(x, y, rand_val)
+        if force_edge and (x == 0 or y == 0):
+            values.put(x, y, sorted(edge_range+(rand_val,))[1])
+        else:
+            values.put(x, y, rand_val)
     
     def fillAllSquare(scale, alt):
         c_y = scale
@@ -67,8 +72,15 @@ def genTerrainMap(size, base_wibble, wibble_scale):
                 c_x += scale * 2
             c_y += scale
     
-    scale = size / 2
     alt = base_wibble
+    if force_edge:
+        values.put(0, 0, sum(edge_range)/2)
+        values.put(size/2, size/2, 128)
+        fillAllDiamond(size/2, alt)
+        scale = size/4
+    else:
+        values.put(0, 0, 128)
+        scale = size / 2
     while (scale >= 1):
         fillAllSquare(scale, alt)
         fillAllDiamond(scale, alt)
@@ -88,7 +100,7 @@ def testRelIndex(index, out_map, **relate):
         return False
     return True
 
-def genFixedRatioMap(in_map, out_map, value, ratio, **relate):
+def genFixedRatioMap(in_map, out_map, value, ratio, force_threshold=False, threshold_range=None, **relate):
     assert in_map.size == out_map.size
     if ratio <= 0 or ratio >= 1:
         print("*_PROPORTION constants must be between 0 and 1!")
@@ -96,6 +108,11 @@ def genFixedRatioMap(in_map, out_map, value, ratio, **relate):
     values = list(in_map.data)
     values.sort()
     threshold = values[255 - int(ratio * in_map.size**2)]
+    if force_threshold:
+        new_threshold = sorted(threshold_range + (threshold,))[1]
+        if new_threshold != threshold:
+            print "Threshold forced from", threshold, "to", new_threshold
+            threshold = new_threshold
     for i in range(in_map.size**2):
         if in_map.data[i] >= threshold:
             if testRelIndex(i, out_map, **relate):
@@ -131,7 +148,7 @@ def genStreams(height_map, terrain_map, number):
         streams_created += 1
 
 # Heightmap for world
-height_map = genTerrainMap(MAP_SIZE, LAND_WIBBLE_BASE, LAND_WIBBLE_SCALE)
+height_map = genTerrainMap(MAP_SIZE, LAND_WIBBLE_BASE, LAND_WIBBLE_SCALE, True, (EDGE_MIN,EDGE_MAX))
 
 # Blank map of terrain for world - initially all deep water
 terrain_map = SquareMap(MAP_SIZE)
@@ -140,7 +157,7 @@ terrain_map = SquareMap(MAP_SIZE)
 genFixedRatioMap(height_map, terrain_map, TerrainType.WATER, LAND_PROPORTION+(1-LAND_PROPORTION)*(1-DEEP_WATER_PROPORTION))
 
 # Generate grass
-waterline = genFixedRatioMap(height_map, terrain_map, TerrainType.GRASS, LAND_PROPORTION)
+waterline = genFixedRatioMap(height_map, terrain_map, TerrainType.GRASS, LAND_PROPORTION, FORCE_SEA_EDGES, (EDGE_MAX+2,256))
 
 # Generate snow
 snow_scatter_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, SNOW_WIBBLE_SCALE)
