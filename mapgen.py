@@ -36,7 +36,7 @@ def genTerrainMap(size, base_wibble, wibble_scale, force_edge=False, edge_range=
     def fillSquare(x, y, scale, alt):
         mean_val = (values.get(x-scale, y-scale) + values.get(x+scale, y-scale) + values.get(x-scale, y+scale) + values.get(x+scale, y+scale)) / 4
         rand_val = mean_val + random.randint(-alt, alt)
-        if force_edge and (x == 0 or y == 0):
+        if force_edge and (x == 0 or y == 0 or x == MAP_SIZE-1 or y ==MAP_SIZE-1):
             values.put(x, y, sorted(edge_range+(rand_val,))[1])
         else:
             values.put(x, y, rand_val)
@@ -44,7 +44,7 @@ def genTerrainMap(size, base_wibble, wibble_scale, force_edge=False, edge_range=
     def fillDiamond(x, y, scale, alt):
         mean_val = (values.get(x-scale, y) + values.get(x, y-scale) + values.get(x+scale, y) + values.get(x, y+scale)) / 4
         rand_val = mean_val + random.randint(-alt, alt)
-        if force_edge and (x == 0 or y == 0):
+        if force_edge and (x == 0 or y == 0 or x == MAP_SIZE-1 or y ==MAP_SIZE-1):
             values.put(x, y, sorted(edge_range+(rand_val,))[1])
         else:
             values.put(x, y, rand_val)
