@@ -15,10 +15,10 @@ LAND_WIBBLE_SCALE = 1.4
 
 # Force minimum and maximum elevation of map edges.
 EDGE_MIN = 0
-EDGE_MAX = 30
+EDGE_MAX = 256
 # Force sea level upwards to cover edges?
 # Can reduce land proportion if EDGE_MAX is too high.
-FORCE_SEA_EDGES = True
+FORCE_SEA_EDGES = False
 
 # Fraction of sea counted as deep water.
 DEEP_WATER_PROPORTION = 0.3
@@ -27,7 +27,7 @@ DEEP_WATER_PROPORTION = 0.3
 SCATTER_WIBBLE_BASE = 20
 
 # Minimum height of snowy areas above sea level
-SNOW_MIN_HEIGHT = 48
+SNOW_MIN_HEIGHT = 32
 # Fraction of land above SNOW_MIN_HEIGHT covered by snow.
 SNOW_PROPORTION = 0.9
 # Clumpiness of snow.
@@ -36,7 +36,7 @@ SNOW_WIBBLE_SCALE = 0.8
 # Fraction of [terrain type] covered by rocks.
 ROCK_PROPORTION_GRASS = 0.08
 ROCK_PROPORTION_SNOW  = 0.16
-ROCK_PROPORTION_WATER = 0.06
+ROCK_PROPORTION_WATER = 0.04
 # Clumpiness of rocks.
 ROCK_WIBBLE_SCALE = 0.88
 

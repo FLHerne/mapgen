@@ -107,7 +107,7 @@ def genFixedRatioMap(in_map, out_map, value, ratio, force_threshold=False, thres
         exit(1)
     values = list(in_map.data)
     values.sort()
-    threshold = values[255 - int(ratio * in_map.size**2)]
+    threshold = values[MAP_SIZE**2 - int(ratio * in_map.size**2)]
     if force_threshold:
         new_threshold = sorted(threshold_range + (threshold,))[1]
         if new_threshold != threshold:
