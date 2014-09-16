@@ -32,7 +32,7 @@ def genTerrainMap(size, base_wibble, wibble_scale, force_edge=False, edge_range=
         print("MAP_SIZE must be a power of two!")
         exit(1)
     values = SquareMap(size)
-    
+
     def fillSquare(x, y, scale, alt):
         mean_val = (values.get(x-scale, y-scale) + values.get(x+scale, y-scale) + values.get(x-scale, y+scale) + values.get(x+scale, y+scale)) / 4
         rand_val = mean_val + random.randint(-alt, alt)
@@ -40,7 +40,7 @@ def genTerrainMap(size, base_wibble, wibble_scale, force_edge=False, edge_range=
             values.put(x, y, sorted(edge_range+(rand_val,))[1])
         else:
             values.put(x, y, rand_val)
-    
+
     def fillDiamond(x, y, scale, alt):
         mean_val = (values.get(x-scale, y) + values.get(x, y-scale) + values.get(x+scale, y) + values.get(x, y+scale)) / 4
         rand_val = mean_val + random.randint(-alt, alt)
@@ -48,7 +48,7 @@ def genTerrainMap(size, base_wibble, wibble_scale, force_edge=False, edge_range=
             values.put(x, y, sorted(edge_range+(rand_val,))[1])
         else:
             values.put(x, y, rand_val)
-    
+
     def fillAllSquare(scale, alt):
         c_y = scale
         while c_y < size:
@@ -57,7 +57,7 @@ def genTerrainMap(size, base_wibble, wibble_scale, force_edge=False, edge_range=
                 fillSquare(c_x, c_y, scale, alt)
                 c_x += scale * 2
             c_y += scale * 2
-    
+
     def fillAllDiamond(scale, alt):
         c_y = 0
         while c_y < size:
@@ -71,7 +71,7 @@ def genTerrainMap(size, base_wibble, wibble_scale, force_edge=False, edge_range=
                 fillDiamond(c_x, c_y, scale, alt)
                 c_x += scale * 2
             c_y += scale
-    
+
     alt = base_wibble
     if force_edge:
         values.put(0, 0, sum(edge_range)/2)
@@ -86,7 +86,7 @@ def genTerrainMap(size, base_wibble, wibble_scale, force_edge=False, edge_range=
         fillAllDiamond(scale, alt)
         scale /= 2
         alt = int(alt/wibble_scale)
-    
+
     return values
 
 def testRelIndex(index, out_map, **relate):
@@ -121,12 +121,12 @@ def genFixedRatioMap(in_map, out_map, value, ratio, force_threshold=False, thres
 
 def genStreams(height_map, terrain_map, number):
     assert height_map.size == terrain_map.size
-    
+
     def neighbours(in_map, x, y):
         def pvt(i,j):
             return (in_map.get(i,j),(i,j))
         return [pvt(x-1,y), pvt(x,y-1), pvt(x+1,y), pvt(x,y+1)]
-    
+
     streams_created = 0
     while streams_created < number:
         t_x = random.randint(0, terrain_map.size)
