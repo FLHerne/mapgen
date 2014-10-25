@@ -19,12 +19,12 @@ class TerrainType:
 BuildCosts = {
     TerrainType.DEEPW: 80,
     TerrainType.WATER: 40,
-    TerrainType.ROCKS: 6,
-    TerrainType.BOGGY: 20,
-    TerrainType.GRASS: 3,
-    TerrainType.SANDY: 4,
-    TerrainType.SNOWY: 6,
-    TerrainType.TREES: 4,
+    TerrainType.ROCKS: 8,
+    TerrainType.BOGGY: 24,
+    TerrainType.GRASS: 4,
+    TerrainType.SANDY: 6,
+    TerrainType.SNOWY: 10,
+    TerrainType.TREES: 8,
     TerrainType.PLANK: 1,
     TerrainType.FLOOR: 1,
     TerrainType.WALLS: 20,
@@ -181,7 +181,7 @@ def genBuildings(height_map, terrain_map, number):
     buildings_created = list()
 
     def tryCreateBuilding(x, y, plan):
-        max_cost = plan.w_x * plan.w_y * 3
+        max_cost = plan.w_x * plan.w_y * 5
         max_height_diff = 1000
         buildcost = 0
         h_min = 255
@@ -249,11 +249,13 @@ def genRoads(terrain_map, positions):
                 heapq.heappush(openlist, (newdist, nbrpos))
         while dijkstramap[curpos[0]][curpos[1]][1] != (PF_MAP_SIZE, PF_MAP_SIZE):
             curpos = dijkstramap[curpos[0]][curpos[1]][1]
-            terrain_map.put(mapcoord(curpos)[0], mapcoord(curpos)[1], TerrainType.FLOOR)
+            terrain = terrain_map.get(*mapcoord(curpos))
+            newterrain = TerrainType.PLANK if (terrain == TerrainType.WATER or terrain == TerrainType.DEEPW or terrain_map == TerrainType.BOGGY or terrain == TerrainType.SANDY) else TerrainType.FLOOR
+            terrain_map.put(mapcoord(curpos)[0], mapcoord(curpos)[1], newterrain)
 
     roads_created = set()
     for pos in positions:
-        for i in range(3):
+        for i in range(ROADS_PER_BUILDING):
             altpos = positions[random.randint(0, len(positions)-1)]
             if (pos, altpos) in roads_created or (altpos, pos) in roads_created:
                 continue
@@ -299,7 +301,7 @@ genFixedRatioMap(tree_scatter_map, terrain_map, TerrainType.TREES, TREE_PROPORTI
 genStreams(height_map, terrain_map, NUM_STREAMS)
 
 # Generate buildings
-buildings = genBuildings(height_map, terrain_map, 10)
+buildings = genBuildings(height_map, terrain_map, NUM_BUILDINGS)
 genRoads(terrain_map, buildings)
 
 terrain_img = Image.new('RGB',(MAP_SIZE,MAP_SIZE),"black")
