@@ -13,6 +13,7 @@ class TerrainType:
     TREES = 4
     PLANK = 5
     FLOOR = 6
+    ROOFD = 12
     WALLS = 7
     GLASS = 8
 
@@ -27,6 +28,7 @@ BuildCosts = {
     TerrainType.TREES: 8,
     TerrainType.PLANK: 1,
     TerrainType.FLOOR: 1,
+    TerrainType.ROOFD: 1,
     TerrainType.WALLS: 20,
     TerrainType.GLASS: 20
 }
@@ -197,7 +199,7 @@ def genBuildings(height_map, terrain_map, number):
                     return False
         for ix in range(plan.w_x):
             for iy in range(plan.w_y):
-                terrain_map.put(x+ix, y+iy, TerrainType.WALLS if plan.layout[ix][iy] else TerrainType.FLOOR)
+                terrain_map.put(x+ix, y+iy, TerrainType.WALLS if plan.layout[ix][iy] else TerrainType.ROOFD)
         return True
 
     while len(buildings_created) < number:
@@ -250,7 +252,7 @@ def genRoads(terrain_map, positions):
         while dijkstramap[curpos[0]][curpos[1]][1] != (PF_MAP_SIZE, PF_MAP_SIZE):
             curpos = dijkstramap[curpos[0]][curpos[1]][1]
             terrain = terrain_map.get(*mapcoord(curpos))
-            newterrain = TerrainType.PLANK if (terrain == TerrainType.WATER or terrain == TerrainType.DEEPW or terrain_map == TerrainType.BOGGY or terrain == TerrainType.SANDY) else TerrainType.FLOOR
+            newterrain = TerrainType.PLANK if (terrain == TerrainType.WATER or terrain == TerrainType.DEEPW or terrain_map == TerrainType.BOGGY or terrain == TerrainType.SANDY) else TerrainType.ROOFD if (terrain == TerrainType.ROOFD or terrain == TerrainType.WALLS) else TerrainType.FLOOR
             terrain_map.put(mapcoord(curpos)[0], mapcoord(curpos)[1], newterrain)
 
     roads_created = set()
@@ -332,6 +334,8 @@ for i in range(MAP_SIZE):
             t_pixels[i,j] = (127,64,0)
         elif terrain_map.get(i,j) == TerrainType.FLOOR:
             t_pixels[i,j] = (255,255,127)
+        elif terrain_map.get(i,j) == TerrainType.ROOFD:
+            t_pixels[i,j] = (128,0,128)
         elif terrain_map.get(i,j) == TerrainType.WALLS:
             t_pixels[i,j] = (0,0,0)
         elif terrain_map.get(i,j) == TerrainType.GLASS:

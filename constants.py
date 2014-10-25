@@ -69,6 +69,6 @@ BOG_WIBBLE_SCALE = 1.8
 NUM_STREAMS = 0
 
 # Number of buildings to generate
-NUM_BUILDINGS = 8
+NUM_BUILDINGS = 12
 # Maximum road links per buildings
 ROADS_PER_BUILDING = 5
