@@ -16,6 +16,35 @@ class TerrainType:
     WALLS = 7
     GLASS = 8
 
+BuildCosts = {
+    TerrainType.DEEPW: 80,
+    TerrainType.WATER: 40,
+    TerrainType.ROCKS: 6,
+    TerrainType.BOGGY: 20,
+    TerrainType.GRASS: 3,
+    TerrainType.SANDY: 4,
+    TerrainType.SNOWY: 6,
+    TerrainType.TREES: 4,
+    TerrainType.PLANK: 1,
+    TerrainType.FLOOR: 1,
+    TerrainType.WALLS: 20,
+    TerrainType.GLASS: 20
+}
+
+class BuildingPlan:
+    def __init__(self, *layout):
+        self.layout = zip(*layout)
+        self.w_x = len(layout[0])
+        self.w_y = len(self.layout[0])
+        self.centre = (int(self.w_x/2), int(self.w_y/2))
+
+buildingone = BuildingPlan(
+[1,1,1,1,0,1,1],
+[1,0,0,0,0,0,1],
+[0,0,0,0,0,0,1],
+[1,0,0,0,0,0,1],
+[1,1,1,1,1,1,1])
+
 class SquareMap:
     def __init__(self, size):
         self.size = size
@@ -111,7 +140,7 @@ def genFixedRatioMap(in_map, out_map, value, ratio, force_threshold=False, thres
     if force_threshold:
         new_threshold = sorted(threshold_range + (threshold,))[1]
         if new_threshold != threshold:
-            print "Threshold forced from", threshold, "to", new_threshold
+            #print "Threshold forced from", threshold, "to", new_threshold
             threshold = new_threshold
     for i in range(in_map.size**2):
         if in_map.data[i] >= threshold:
@@ -146,6 +175,90 @@ def genStreams(height_map, terrain_map, number):
             t_y = valid_nbrs[0][1][1]
             terrain_map.put(t_x, t_y, TerrainType.WATER)
         streams_created += 1
+
+def genBuildings(height_map, terrain_map, number):
+    assert height_map.size == terrain_map.size
+    buildings_created = list()
+
+    def tryCreateBuilding(x, y, plan):
+        max_cost = plan.w_x * plan.w_y * 3
+        max_height_diff = 1000
+        buildcost = 0
+        h_min = 255
+        h_max= 0
+        for ix in range(x, x+plan.w_x):
+            for iy in range(y, y+plan.w_y):
+                h_min = min(h_min, height_map.get(ix, iy))
+                h_max = max(h_max, height_map.get(ix, iy))
+                if h_max > h_min+max_height_diff:
+                    return False
+                buildcost += BuildCosts[terrain_map.get(ix, iy)]
+                if buildcost > max_cost:
+                    return False
+        for ix in range(plan.w_x):
+            for iy in range(plan.w_y):
+                terrain_map.put(x+ix, y+iy, TerrainType.WALLS if plan.layout[ix][iy] else TerrainType.FLOOR)
+        return True
+
+    while len(buildings_created) < number:
+        t_x = random.randint(0, terrain_map.size)
+        t_y = random.randint(0, terrain_map.size)
+        if tryCreateBuilding(t_x, t_y, buildingone):
+            buildings_created.append((t_x+buildingone.centre[0], t_y+buildingone.centre[1]))
+    return buildings_created
+
+def genRoads(terrain_map, positions):
+    def genRoad(startpos, endpos):
+        '''Find the best direction to move towards the player'''
+        PF_MAP_SIZE = MAP_SIZE/2
+        def mindist(a, b, size):
+            '''Distance between two values accounting for world wrapping'''
+            return min((b-a)%size,(a-b)%size)
+
+        def mapcoord(pfcoord):
+            '''Get map coordinate from pathfinder one'''
+            return ((startpos[0] + pfcoord[0] - PF_MAP_SIZE) % MAP_SIZE,
+                    (startpos[1] + pfcoord[1] - PF_MAP_SIZE) % MAP_SIZE)
+
+        dijkstramap = [[[0, (PF_MAP_SIZE, PF_MAP_SIZE), False] for x in xrange(2*PF_MAP_SIZE)] for x in xrange(2*PF_MAP_SIZE)]
+        import heapq
+        openlist = []
+        heapq.heappush(openlist, (0, (PF_MAP_SIZE, PF_MAP_SIZE)))
+        curpos = None
+        while openlist:
+            curnode = heapq.heappop(openlist)
+            curdist = curnode[0]
+            curpos = curnode[1]
+            if mapcoord(curpos) == tuple(endpos):
+                break
+            if dijkstramap[curpos[0]][curpos[1]][2] == True:
+                continue
+            else:
+                dijkstramap[curpos[0]][curpos[1]][2] = True
+            for nbrpos in [(curpos[0]-1, curpos[1]), (curpos[0], curpos[1]-1), (curpos[0]+1, curpos[1]), (curpos[0], curpos[1]+1)]:
+                if (nbrpos[0] < 0 or nbrpos[1] < 0 or
+                    nbrpos[0] >= 2*PF_MAP_SIZE or nbrpos[1] >= 2*PF_MAP_SIZE or
+                    nbrpos == (PF_MAP_SIZE, PF_MAP_SIZE)):
+                    continue
+                terrain = terrain_map.get(*mapcoord(nbrpos))
+                cost = BuildCosts[terrain]
+                newdist = curdist+cost
+                if dijkstramap[nbrpos[0]][nbrpos[1]][0] <= newdist and dijkstramap[nbrpos[0]][nbrpos[1]][0] != 0:
+                    continue
+                dijkstramap[nbrpos[0]][nbrpos[1]] = [newdist, curpos, False]
+                heapq.heappush(openlist, (newdist, nbrpos))
+        while dijkstramap[curpos[0]][curpos[1]][1] != (PF_MAP_SIZE, PF_MAP_SIZE):
+            curpos = dijkstramap[curpos[0]][curpos[1]][1]
+            terrain_map.put(mapcoord(curpos)[0], mapcoord(curpos)[1], TerrainType.FLOOR)
+
+    roads_created = set()
+    for pos in positions:
+        for i in range(3):
+            altpos = positions[random.randint(0, len(positions)-1)]
+            if (pos, altpos) in roads_created or (altpos, pos) in roads_created:
+                continue
+            roads_created.add((pos, altpos))
+            genRoad(pos, altpos)
 
 # Heightmap for world
 height_map = genTerrainMap(MAP_SIZE, LAND_WIBBLE_BASE, LAND_WIBBLE_SCALE, True, (EDGE_MIN,EDGE_MAX))
@@ -184,6 +297,10 @@ genFixedRatioMap(tree_scatter_map, terrain_map, TerrainType.TREES, TREE_PROPORTI
 
 # Generate streams
 genStreams(height_map, terrain_map, NUM_STREAMS)
+
+# Generate buildings
+buildings = genBuildings(height_map, terrain_map, 10)
+genRoads(terrain_map, buildings)
 
 terrain_img = Image.new('RGB',(MAP_SIZE,MAP_SIZE),"black")
 t_pixels = terrain_img.load()
