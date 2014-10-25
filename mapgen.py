@@ -314,31 +314,21 @@ h_pixels = heightmap_img.load()
 for i in range(MAP_SIZE):
     for j in range(MAP_SIZE):
         h_pixels[i,j] = height_map.get(i,j)
-        if terrain_map.get(i,j) == TerrainType.DEEPW:
-            t_pixels[i,j] = (0,0,255)
-        elif terrain_map.get(i,j) == TerrainType.WATER:
-            t_pixels[i,j] = (0,127,255)
-        elif terrain_map.get(i,j) == TerrainType.ROCKS:
-            t_pixels[i,j] = (127,127,127)
-        elif terrain_map.get(i,j) == TerrainType.BOGGY:
-            t_pixels[i,j] = (64,127,127)
-        elif terrain_map.get(i,j) == TerrainType.GRASS:
-            t_pixels[i,j] = (0,255,0)
-        elif terrain_map.get(i,j) == TerrainType.SANDY:
-            t_pixels[i,j] = (127,127,0)
-        elif terrain_map.get(i,j) == TerrainType.SNOWY:
-            t_pixels[i,j] = (255,255,255)
-        elif terrain_map.get(i,j) == TerrainType.TREES:
-            t_pixels[i,j] = (64,127,64)
-        elif terrain_map.get(i,j) == TerrainType.PLANK:
-            t_pixels[i,j] = (127,64,0)
-        elif terrain_map.get(i,j) == TerrainType.FLOOR:
-            t_pixels[i,j] = (255,255,127)
-        elif terrain_map.get(i,j) == TerrainType.ROOFD:
-            t_pixels[i,j] = (128,0,128)
-        elif terrain_map.get(i,j) == TerrainType.WALLS:
-            t_pixels[i,j] = (0,0,0)
-        elif terrain_map.get(i,j) == TerrainType.GLASS:
-            t_pixels[i,j] = (0,255,255)
+        terrain = terrain_map.get(i,j)
+        t_pixels[i,j] = (
+            (0  , 0 ,255) if terrain == TerrainType.DEEPW else
+            (0  ,127,255) if terrain == TerrainType.WATER else
+            (127,127,127) if terrain == TerrainType.ROCKS else
+            (64 ,127,127) if terrain == TerrainType.BOGGY else
+            (0  ,255,  0) if terrain == TerrainType.GRASS else
+            (127,127,  0) if terrain == TerrainType.SANDY else
+            (255,255,255) if terrain == TerrainType.SNOWY else
+            (64 ,127, 64) if terrain == TerrainType.TREES else
+            (127, 64,  0) if terrain == TerrainType.PLANK else
+            (255,255,127) if terrain == TerrainType.FLOOR else
+            (128, 0 ,128) if terrain == TerrainType.ROOFD else
+            (0  , 0 ,  0) if terrain == TerrainType.WALLS else
+            (0  ,255,255) if terrain == TerrainType.GLASS else
+            None) # This shouln't happen!
 terrain_img.save("terrain.png")
 heightmap_img.save("heightmap.png")
