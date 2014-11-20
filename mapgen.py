@@ -58,7 +58,7 @@ class SquareMap:
         val = 255 if val > 255 else val
         self.data[(y % self.size) * self.size + (x % self.size)] = val
 
-def genTerrainMap(size, base_wibble, wibble_scale, force_edge=False, edge_range=None):
+def genTerrainMap(size, base_wibble, wibble_scale):
     if not ((size & (size - 1)) == 0) and size != 0:
         print("MAP_SIZE must be a power of two!")
         exit(1)
@@ -67,18 +67,12 @@ def genTerrainMap(size, base_wibble, wibble_scale, force_edge=False, edge_range=
     def fillSquare(x, y, scale, alt):
         mean_val = (values.get(x-scale, y-scale) + values.get(x+scale, y-scale) + values.get(x-scale, y+scale) + values.get(x+scale, y+scale)) / 4
         rand_val = mean_val + random.randint(-alt, alt)
-        if force_edge and (x == 0 or y == 0 or x == MAP_SIZE-1 or y ==MAP_SIZE-1):
-            values.put(x, y, sorted(edge_range+(rand_val,))[1])
-        else:
-            values.put(x, y, rand_val)
+        values.put(x, y, rand_val)
 
     def fillDiamond(x, y, scale, alt):
         mean_val = (values.get(x-scale, y) + values.get(x, y-scale) + values.get(x+scale, y) + values.get(x, y+scale)) / 4
         rand_val = mean_val + random.randint(-alt, alt)
-        if force_edge and (x == 0 or y == 0 or x == MAP_SIZE-1 or y ==MAP_SIZE-1):
-            values.put(x, y, sorted(edge_range+(rand_val,))[1])
-        else:
-            values.put(x, y, rand_val)
+        values.put(x, y, rand_val)
 
     def fillAllSquare(scale, alt):
         c_y = scale
@@ -104,14 +98,8 @@ def genTerrainMap(size, base_wibble, wibble_scale, force_edge=False, edge_range=
             c_y += scale
 
     alt = base_wibble
-    if force_edge:
-        values.put(0, 0, sum(edge_range)/2)
-        values.put(size/2, size/2, 128)
-        fillAllDiamond(size/2, alt)
-        scale = size/4
-    else:
-        values.put(0, 0, 128)
-        scale = size / 2
+    values.put(0, 0, 128)
+    scale = size / 2
     while (scale >= 1):
         fillAllSquare(scale, alt)
         fillAllDiamond(scale, alt)
@@ -222,6 +210,7 @@ def genRoads(terrain_map, positions):
             return ((startpos[0] + pfcoord[0] - PF_MAP_SIZE) % MAP_SIZE,
                     (startpos[1] + pfcoord[1] - PF_MAP_SIZE) % MAP_SIZE)
 
+        foundtarget = False
         dijkstramap = [[[0, (PF_MAP_SIZE, PF_MAP_SIZE), False] for x in xrange(2*PF_MAP_SIZE)] for x in xrange(2*PF_MAP_SIZE)]
         import heapq
         openlist = []
@@ -229,26 +218,28 @@ def genRoads(terrain_map, positions):
         curpos = None
         while openlist:
             curnode = heapq.heappop(openlist)
-            curdist = curnode[0]
             curpos = curnode[1]
             if mapcoord(curpos) == tuple(endpos):
+                foundtarget = True
                 break
             if dijkstramap[curpos[0]][curpos[1]][2] == True:
                 continue
-            else:
-                dijkstramap[curpos[0]][curpos[1]][2] = True
+            dijkstramap[curpos[0]][curpos[1]][2] = True
+            curdist = dijkstramap[curpos[0]][curpos[1]][0]
             for nbrpos in [(curpos[0]-1, curpos[1]), (curpos[0], curpos[1]-1), (curpos[0]+1, curpos[1]), (curpos[0], curpos[1]+1)]:
-                if (nbrpos[0] < 0 or nbrpos[1] < 0 or
-                    nbrpos[0] >= 2*PF_MAP_SIZE or nbrpos[1] >= 2*PF_MAP_SIZE or
-                    nbrpos == (PF_MAP_SIZE, PF_MAP_SIZE)):
-                    continue
+                nbrpos = (nbrpos[0]%MAP_SIZE, nbrpos[1]%MAP_SIZE)
                 terrain = terrain_map.get(*mapcoord(nbrpos))
                 cost = BuildCosts[terrain]
                 newdist = curdist+cost
                 if dijkstramap[nbrpos[0]][nbrpos[1]][0] <= newdist and dijkstramap[nbrpos[0]][nbrpos[1]][0] != 0:
                     continue
+                heurdist = newdist + 3*(mindist(endpos[0], mapcoord(nbrpos)[0], MAP_SIZE) +
+                                        mindist(endpos[1], mapcoord(nbrpos)[1], MAP_SIZE))
                 dijkstramap[nbrpos[0]][nbrpos[1]] = [newdist, curpos, False]
-                heapq.heappush(openlist, (newdist, nbrpos))
+                heapq.heappush(openlist, (heurdist, nbrpos))
+        if not foundtarget:
+            print "Failed"
+            return False
         while dijkstramap[curpos[0]][curpos[1]][1] != (PF_MAP_SIZE, PF_MAP_SIZE):
             curpos = dijkstramap[curpos[0]][curpos[1]][1]
             terrain = terrain_map.get(*mapcoord(curpos))
@@ -265,7 +256,7 @@ def genRoads(terrain_map, positions):
             genRoad(pos, altpos)
 
 # Heightmap for world
-height_map = genTerrainMap(MAP_SIZE, LAND_WIBBLE_BASE, LAND_WIBBLE_SCALE, True, (EDGE_MIN,EDGE_MAX))
+height_map = genTerrainMap(MAP_SIZE, LAND_WIBBLE_BASE, LAND_WIBBLE_SCALE)
 
 # Blank map of terrain for world - initially all deep water
 terrain_map = SquareMap(MAP_SIZE)
