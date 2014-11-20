@@ -98,34 +98,6 @@ def genFixedRatioMap(in_map, out_map, value, ratio, force_threshold=False, thres
                 out_map.data[i] = value
     return  threshold
 
-def genStreams(height_map, terrain_map, number):
-    assert height_map.size == terrain_map.size
-
-    def neighbours(in_map, x, y):
-        def pvt(i,j):
-            return (in_map.get(i,j),(i,j))
-        return [pvt(x-1,y), pvt(x,y-1), pvt(x+1,y), pvt(x,y+1)]
-
-    streams_created = 0
-    while streams_created < number:
-        t_x = random.randint(0, terrain_map.size)
-        t_y = random.randint(0, terrain_map.size)
-        if terrain_map.get(t_x, t_y) != TerrainType.WATER:
-            continue
-        nbr_terrain = neighbours(terrain_map, t_x, t_y)
-        if [item[0] for item in nbr_terrain].count(TerrainType.WATER) == 4:
-            continue
-        while True:
-            nbr_heights = neighbours(height_map, t_x, t_y)
-            nbr_heights.sort()
-            valid_nbrs = filter(lambda n: n[0] >= height_map.get(t_x, t_y) and terrain_map.get(*n[1]) != TerrainType.WATER, nbr_heights)
-            if len(valid_nbrs) == 0:
-                break
-            t_x = valid_nbrs[0][1][0]
-            t_y = valid_nbrs[0][1][1]
-            terrain_map.put(t_x, t_y, TerrainType.WATER)
-        streams_created += 1
-
 def genBuildings(height_map, terrain_map, number):
     assert height_map.size == terrain_map.size
     buildings_created = list()

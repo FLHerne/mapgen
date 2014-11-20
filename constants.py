@@ -64,10 +64,6 @@ BOG_PROPORTION = 0.2
 # Clumpiness of boggy areas.
 BOG_WIBBLE_SCALE = 1.8
 
-# Number of streams to generate.
-# This feature is mostly broken.
-NUM_STREAMS = 0
-
 # Number of buildings to generate
 NUM_BUILDINGS = 8
 # Maximum road links per buildings
