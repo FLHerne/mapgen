@@ -49,77 +49,68 @@ buildingone = BuildingPlan(
 [1,0,0,0,0,0,1],
 [1,1,1,1,1,1,1])
 
-class SquareMap:
-    def __init__(self, size):
-        self.size = size
-        self.data = bytearray(size**2)
-    def get(self, x, y):
-        return self.data[(y % self.size) * self.size + (x % self.size)]
-    def put(self, x, y, val):
-        val = 0 if val < 0 else val
-        val = 255 if val > 255 else val
-        self.data[(y % self.size) * self.size + (x % self.size)] = val
-
 def genTerrainMap(size, base_wibble, wibble_scale):
-
-    origvalues = diamondsquare.genvaluemap(size, wibble_scale)
-
-    values = SquareMap(size)
-    values.data = bytearray(origvalues.astype(numpy.uint8).tobytes())
+    values = diamondsquare.genvaluemap(size, wibble_scale)
+    values -= values.min()
+    values *= 255.0/values.max()
     return values
 
 def testRelIndex(index, out_map, **relate):
-    if ('require' in relate) and not (out_map.data[index] in relate['require']):
+    if ('require' in relate) and not (out_map.flat[index] in relate['require']):
         return False
-    if ('avoid' in relate) and (out_map.data[index] in relate['avoid']):
+    if ('avoid' in relate) and (out_map.flat[index] in relate['avoid']):
         return False
-    if 'req_omap' in relate and not all(n[0].data[index] in n[1] for n in relate['req_omap']):
+    if 'req_omap' in relate and not all(n[0].flat[index] in n[1] for n in relate['req_omap']):
         return False
-    if 'avd_omap' in relate and any(n[0].data[index] in n[1] for n in relate['avd_omap']):
+    if 'avd_omap' in relate and any(n[0].flat[index] in n[1] for n in relate['avd_omap']):
         return False
     return True
 
-def genFixedRatioMap(in_map, out_map, value, ratio, **relate):
-    assert in_map.size == out_map.size
+def genFixedRatioMap(in_map, out_map, value, ratio, force_threshold=False, threshold_range=None, **relate):
+    assert in_map.shape == out_map.shape
     if ratio <= 0 or ratio >= 1:
         print("*_PROPORTION constants must be between 0 and 1!")
         exit(1)
-    values = list(in_map.data)
-    values.sort()
-    threshold = values[MAP_SIZE**2 - int(ratio * in_map.size**2)]
-    for i in range(in_map.size**2):
-        if in_map.data[i] >= threshold:
+    threshold = numpy.percentile(in_map, ratio*100)
+    thc=0
+    rel=0
+    for i in range(in_map.shape[0]**2):
+        if in_map.flat[i] < threshold:
+            thc += 1
             if testRelIndex(i, out_map, **relate):
-                out_map.data[i] = value
-    return  threshold
+                rel += 1
+                out_map.flat[i] = value
+    return int(threshold)
 
 def genBuildings(height_map, terrain_map, number):
-    assert height_map.size == terrain_map.size
+    assert height_map.shape[0] == terrain_map.shape[0]
     buildings_created = list()
 
     def tryCreateBuilding(x, y, plan):
-        max_cost = plan.w_x * plan.w_y * 5
+        max_cost = plan.w_x * plan.w_y * 5000
         max_height_diff = 1000
         buildcost = 0
         h_min = 255
         h_max= 0
         for ix in range(x, x+plan.w_x):
             for iy in range(y, y+plan.w_y):
-                h_min = min(h_min, height_map.get(ix, iy))
-                h_max = max(h_max, height_map.get(ix, iy))
+                if ix >= height_map.shape[0] or iy >= height_map.shape[1]:
+                    return False
+                h_min = min(h_min, height_map[ix, iy])
+                h_max = max(h_max, height_map[ix, iy])
                 if h_max > h_min+max_height_diff:
                     return False
-                buildcost += BuildCosts[terrain_map.get(ix, iy)]
+                buildcost += BuildCosts[terrain_map[ix, iy]]
                 if buildcost > max_cost:
                     return False
         for ix in range(plan.w_x):
             for iy in range(plan.w_y):
-                terrain_map.put(x+ix, y+iy, TerrainType.WALLS if plan.layout[ix][iy] else TerrainType.ROOFD)
+                terrain_map[x+ix, y+iy] = TerrainType.WALLS if plan.layout[ix][iy] else TerrainType.ROOFD
         return True
 
     while len(buildings_created) < number:
-        t_x = random.randint(0, terrain_map.size)
-        t_y = random.randint(0, terrain_map.size)
+        t_x = random.randint(0, terrain_map.shape[0])
+        t_y = random.randint(0, terrain_map.shape[0])
         if tryCreateBuilding(t_x, t_y, buildingone):
             buildings_created.append((t_x+buildingone.centre[0], t_y+buildingone.centre[1]))
     return buildings_created
@@ -155,7 +146,7 @@ def genRoads(terrain_map, positions):
             curdist = dijkstramap[curpos[0]][curpos[1]][0]
             for nbrpos in [(curpos[0]-1, curpos[1]), (curpos[0], curpos[1]-1), (curpos[0]+1, curpos[1]), (curpos[0], curpos[1]+1)]:
                 nbrpos = (nbrpos[0]%MAP_SIZE, nbrpos[1]%MAP_SIZE)
-                terrain = terrain_map.get(*mapcoord(nbrpos))
+                terrain = terrain_map[mapcoord(nbrpos)[0], mapcoord(nbrpos)[1]]
                 cost = BuildCosts[terrain]
                 newdist = curdist+cost
                 if dijkstramap[nbrpos[0]][nbrpos[1]][0] <= newdist and dijkstramap[nbrpos[0]][nbrpos[1]][0] != 0:
@@ -169,9 +160,9 @@ def genRoads(terrain_map, positions):
             return False
         while dijkstramap[curpos[0]][curpos[1]][1] != (PF_MAP_SIZE, PF_MAP_SIZE):
             curpos = dijkstramap[curpos[0]][curpos[1]][1]
-            terrain = terrain_map.get(*mapcoord(curpos))
-            newterrain = TerrainType.PLANK if (terrain == TerrainType.WATER or terrain == TerrainType.DEEPW or terrain_map == TerrainType.BOGGY or terrain == TerrainType.SANDY) else TerrainType.ROOFD if (terrain == TerrainType.ROOFD or terrain == TerrainType.WALLS) else TerrainType.FLOOR
-            terrain_map.put(mapcoord(curpos)[0], mapcoord(curpos)[1], newterrain)
+            terrain = int(terrain_map[mapcoord(curpos)[0]][mapcoord(curpos)[1]])
+            newterrain = TerrainType.PLANK if (terrain == TerrainType.WATER or terrain == TerrainType.DEEPW or terrain == TerrainType.BOGGY or terrain == TerrainType.SANDY) else TerrainType.ROOFD if (terrain == TerrainType.ROOFD or terrain == TerrainType.WALLS) else TerrainType.FLOOR
+            terrain_map[mapcoord(curpos)[0], mapcoord(curpos)[1]] = newterrain
 
     roads_created = set()
     for pos in positions:
@@ -186,7 +177,7 @@ def genRoads(terrain_map, positions):
 height_map = genTerrainMap(MAP_SIZE, LAND_WIBBLE_BASE, LAND_WIBBLE_SCALE)
 
 # Blank map of terrain for world - initially all deep water
-terrain_map = SquareMap(MAP_SIZE)
+terrain_map = numpy.zeros((MAP_SIZE, MAP_SIZE))
 
 # Generate normal-depth water
 genFixedRatioMap(height_map, terrain_map, TerrainType.WATER, LAND_PROPORTION+(1-LAND_PROPORTION)*(1-DEEP_WATER_PROPORTION))
@@ -228,8 +219,8 @@ h_pixels = heightmap_img.load()
 
 for i in range(MAP_SIZE):
     for j in range(MAP_SIZE):
-        h_pixels[i,j] = height_map.get(i,j)
-        terrain = terrain_map.get(i,j)
+        h_pixels[i,j] = height_map[i,j]
+        terrain = terrain_map[i,j]
         t_pixels[i,j] = (
             (0  , 0 ,255) if terrain == TerrainType.DEEPW else
             (0  ,127,255) if terrain == TerrainType.WATER else
