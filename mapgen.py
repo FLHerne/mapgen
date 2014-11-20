@@ -79,7 +79,7 @@ def testRelIndex(index, out_map, **relate):
         return False
     return True
 
-def genFixedRatioMap(in_map, out_map, value, ratio, force_threshold=False, threshold_range=None, **relate):
+def genFixedRatioMap(in_map, out_map, value, ratio, **relate):
     assert in_map.size == out_map.size
     if ratio <= 0 or ratio >= 1:
         print("*_PROPORTION constants must be between 0 and 1!")
@@ -87,11 +87,6 @@ def genFixedRatioMap(in_map, out_map, value, ratio, force_threshold=False, thres
     values = list(in_map.data)
     values.sort()
     threshold = values[MAP_SIZE**2 - int(ratio * in_map.size**2)]
-    if force_threshold:
-        new_threshold = sorted(threshold_range + (threshold,))[1]
-        if new_threshold != threshold:
-            #print "Threshold forced from", threshold, "to", new_threshold
-            threshold = new_threshold
     for i in range(in_map.size**2):
         if in_map.data[i] >= threshold:
             if testRelIndex(i, out_map, **relate):
@@ -197,7 +192,7 @@ terrain_map = SquareMap(MAP_SIZE)
 genFixedRatioMap(height_map, terrain_map, TerrainType.WATER, LAND_PROPORTION+(1-LAND_PROPORTION)*(1-DEEP_WATER_PROPORTION))
 
 # Generate grass
-waterline = genFixedRatioMap(height_map, terrain_map, TerrainType.GRASS, LAND_PROPORTION, FORCE_SEA_EDGES, (EDGE_MAX+2,256))
+waterline = genFixedRatioMap(height_map, terrain_map, TerrainType.GRASS, LAND_PROPORTION)
 
 # Generate snow
 snow_scatter_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, SNOW_WIBBLE_SCALE)
@@ -221,9 +216,6 @@ genFixedRatioMap(bog_map, terrain_map, TerrainType.BOGGY, BOG_PROPORTION, avoid=
 tree_scatter_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, TREE_WIBBLE_SCALE)
 genFixedRatioMap(tree_scatter_map, terrain_map, TerrainType.TREES, TREE_PROPORTION_GRASS, require=[TerrainType.GRASS])
 genFixedRatioMap(tree_scatter_map, terrain_map, TerrainType.TREES, TREE_PROPORTION_SNOW, require=[TerrainType.SNOWY])
-
-# Generate streams
-genStreams(height_map, terrain_map, NUM_STREAMS)
 
 # Generate buildings
 buildings = genBuildings(height_map, terrain_map, NUM_BUILDINGS)
