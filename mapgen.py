@@ -1,6 +1,8 @@
 from PIL import Image
 from constants import *
+import diamondsquare
 import random
+import numpy
 
 class TerrainType:
     DEEPW = 0
@@ -59,53 +61,11 @@ class SquareMap:
         self.data[(y % self.size) * self.size + (x % self.size)] = val
 
 def genTerrainMap(size, base_wibble, wibble_scale):
-    if not ((size & (size - 1)) == 0) and size != 0:
-        print("MAP_SIZE must be a power of two!")
-        exit(1)
+
+    origvalues = diamondsquare.genvaluemap(size, wibble_scale)
+
     values = SquareMap(size)
-
-    def fillSquare(x, y, scale, alt):
-        mean_val = (values.get(x-scale, y-scale) + values.get(x+scale, y-scale) + values.get(x-scale, y+scale) + values.get(x+scale, y+scale)) / 4
-        rand_val = mean_val + random.randint(-alt, alt)
-        values.put(x, y, rand_val)
-
-    def fillDiamond(x, y, scale, alt):
-        mean_val = (values.get(x-scale, y) + values.get(x, y-scale) + values.get(x+scale, y) + values.get(x, y+scale)) / 4
-        rand_val = mean_val + random.randint(-alt, alt)
-        values.put(x, y, rand_val)
-
-    def fillAllSquare(scale, alt):
-        c_y = scale
-        while c_y < size:
-            c_x = scale
-            while c_x < size:
-                fillSquare(c_x, c_y, scale, alt)
-                c_x += scale * 2
-            c_y += scale * 2
-
-    def fillAllDiamond(scale, alt):
-        c_y = 0
-        while c_y < size:
-            c_x = scale
-            while c_x < size:
-                fillDiamond(c_x, c_y, scale, alt)
-                c_x += scale * 2
-            c_y += scale
-            c_x = 0
-            while c_x < size:
-                fillDiamond(c_x, c_y, scale, alt)
-                c_x += scale * 2
-            c_y += scale
-
-    alt = base_wibble
-    values.put(0, 0, 128)
-    scale = size / 2
-    while (scale >= 1):
-        fillAllSquare(scale, alt)
-        fillAllDiamond(scale, alt)
-        scale /= 2
-        alt = int(alt/wibble_scale)
-
+    values.data = bytearray(origvalues.astype(numpy.uint8).tobytes())
     return values
 
 def testRelIndex(index, out_map, **relate):
