@@ -1,6 +1,7 @@
 from PIL import Image
 from constants import *
 import diamondsquare
+import terraintypes
 import random
 import numpy
 
@@ -66,20 +67,9 @@ def testRelIndex(index, out_map, **relate):
         return False
     return True
 
-def genFixedRatioMap(in_map, out_map, value, ratio, force_threshold=False, threshold_range=None, **relate):
-    assert in_map.shape == out_map.shape
-    if ratio <= 0 or ratio >= 1:
-        print("*_PROPORTION constants must be between 0 and 1!")
-        exit(1)
+def genFixedRatioMap(in_map, out_map, value, ratio, **conditions):
     threshold = numpy.percentile(in_map, ratio*100)
-    thc=0
-    rel=0
-    for i in range(in_map.shape[0]**2):
-        if in_map.flat[i] < threshold:
-            thc += 1
-            if testRelIndex(i, out_map, **relate):
-                rel += 1
-                out_map.flat[i] = value
+    terraintypes.conditionMap((in_map < threshold), out_map, value, **conditions)
     return int(threshold)
 
 def genBuildings(height_map, terrain_map, number):
