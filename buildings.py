@@ -33,7 +33,7 @@ def genBuildings(height_map, terrain_map, number):
 
     max_attempts = number * 20
     attempts = 0
-    buildingone = BuildingPlan("buildingone.png")
+    buildingone = BuildingPlan("buildingtemplates/buildingone.png")
     while attempts < max_attempts and len(building_positions) < number:
         t_x = random.randint(0, terrain_map.shape[0])
         t_y = random.randint(0, terrain_map.shape[0])
