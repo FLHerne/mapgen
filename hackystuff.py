@@ -1,3 +1,5 @@
+import numpy
+
 class TerrainType:
     DEEPW = 0
     WATER = 9
@@ -29,16 +31,4 @@ BuildCosts = {
     TerrainType.GLASS: 20
 }
 
-class BuildingPlan:
-    def __init__(self, *layout):
-        self.layout = zip(*layout)
-        self.w_x = len(layout[0])
-        self.w_y = len(self.layout[0])
-        self.centre = (int(self.w_x/2), int(self.w_y/2))
-
-buildingone = BuildingPlan(
-[1,1,1,1,0,1,1],
-[1,0,0,0,0,0,1],
-[0,0,0,0,0,0,1],
-[1,0,0,0,0,0,1],
-[1,1,1,1,1,1,1])
+ABuildCosts = [BuildCosts[i] if i in BuildCosts else 0 for i in range(max(BuildCosts.keys()))]

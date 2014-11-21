@@ -1,4 +1,5 @@
 from PIL import Image
+import buildings
 from constants import *
 import diamondsquare
 from hackystuff import *
@@ -27,39 +28,6 @@ def genFixedRatioMap(in_map, out_map, value, ratio, **conditions):
     threshold = numpy.percentile(in_map, ratio*100)
     terraintypes.conditionMap((in_map < threshold), out_map, value, **conditions)
     return int(threshold)
-
-def genBuildings(height_map, terrain_map, number):
-    assert height_map.shape[0] == terrain_map.shape[0]
-    buildings_created = list()
-
-    def tryCreateBuilding(x, y, plan):
-        max_cost = plan.w_x * plan.w_y * 5000
-        max_height_diff = 1000
-        buildcost = 0
-        h_min = 255
-        h_max= 0
-        for ix in range(x, x+plan.w_x):
-            for iy in range(y, y+plan.w_y):
-                if ix >= height_map.shape[0] or iy >= height_map.shape[1]:
-                    return False
-                h_min = min(h_min, height_map[ix, iy])
-                h_max = max(h_max, height_map[ix, iy])
-                if h_max > h_min+max_height_diff:
-                    return False
-                buildcost += BuildCosts[terrain_map[ix, iy]]
-                if buildcost > max_cost:
-                    return False
-        for ix in range(plan.w_x):
-            for iy in range(plan.w_y):
-                terrain_map[x+ix, y+iy] = TerrainType.WALLS if plan.layout[ix][iy] else TerrainType.ROOFD
-        return True
-
-    while len(buildings_created) < number:
-        t_x = random.randint(0, terrain_map.shape[0])
-        t_y = random.randint(0, terrain_map.shape[0])
-        if tryCreateBuilding(t_x, t_y, buildingone):
-            buildings_created.append((t_x+buildingone.centre[0], t_y+buildingone.centre[1]))
-    return buildings_created
 
 def genRoads(terrain_map, positions):
     def genRoad(startpos, endpos):
@@ -123,7 +91,7 @@ def genRoads(terrain_map, positions):
 height_map = genTerrainMap(MAP_SIZE, LAND_WIBBLE_BASE, LAND_WIBBLE_SCALE)
 
 # Blank map of terrain for world - initially all deep water
-terrain_map = numpy.zeros((MAP_SIZE, MAP_SIZE))
+terrain_map = numpy.zeros((MAP_SIZE, MAP_SIZE), dtype=numpy.uint8)
 
 # Generate normal-depth water
 genFixedRatioMap(height_map, terrain_map, TerrainType.WATER, LAND_PROPORTION+(1-LAND_PROPORTION)*(1-DEEP_WATER_PROPORTION))
@@ -155,7 +123,7 @@ genFixedRatioMap(tree_scatter_map, terrain_map, TerrainType.TREES, TREE_PROPORTI
 genFixedRatioMap(tree_scatter_map, terrain_map, TerrainType.TREES, TREE_PROPORTION_SNOW, require=[TerrainType.SNOWY])
 
 # Generate buildings
-buildings = genBuildings(height_map, terrain_map, NUM_BUILDINGS)
+buildings = buildings.genBuildings(height_map, terrain_map, NUM_BUILDINGS)
 genRoads(terrain_map, buildings)
 
 terrain_img = Image.new('RGB',(MAP_SIZE,MAP_SIZE),"black")
