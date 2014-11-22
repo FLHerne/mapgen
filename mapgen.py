@@ -58,29 +58,10 @@ genFixedRatioMap(tree_scatter_map, terrain_map, TerrainType.TREES, TREE_PROPORTI
 buildings = buildings.genBuildings(height_map, terrain_map, NUM_BUILDINGS)
 roads.genRoads(terrain_map, buildings)
 
-terrain_img = Image.new('RGB',(MAP_SIZE,MAP_SIZE),"black")
-t_pixels = terrain_img.load()
-heightmap_img = Image.new('L',(MAP_SIZE,MAP_SIZE),"black")
-h_pixels = heightmap_img.load()
+heightmap_img = Image.fromarray(height_map.astype(numpy.uint8))
+terrain_colors = numpy.choose(terrain_map, ATypeColors)
+terrain_colors_3d = terrain_colors.view(dtype=numpy.uint8).reshape(MAP_SIZE,MAP_SIZE,3)
+terrain_img = Image.fromarray(terrain_colors_3d)
 
-for i in range(MAP_SIZE):
-    for j in range(MAP_SIZE):
-        h_pixels[i,j] = height_map[i,j]
-        terrain = terrain_map[i,j]
-        t_pixels[i,j] = (
-            (0  , 0 ,255) if terrain == TerrainType.DEEPW else
-            (0  ,127,255) if terrain == TerrainType.WATER else
-            (127,127,127) if terrain == TerrainType.ROCKS else
-            (64 ,127,127) if terrain == TerrainType.BOGGY else
-            (0  ,255,  0) if terrain == TerrainType.GRASS else
-            (127,127,  0) if terrain == TerrainType.SANDY else
-            (255,255,255) if terrain == TerrainType.SNOWY else
-            (64 ,127, 64) if terrain == TerrainType.TREES else
-            (127, 64,  0) if terrain == TerrainType.PLANK else
-            (255,255,127) if terrain == TerrainType.FLOOR else
-            (128, 0 ,128) if terrain == TerrainType.ROOFD else
-            (0  , 0 ,  0) if terrain == TerrainType.WALLS else
-            (0  ,255,255) if terrain == TerrainType.GLASS else
-            None) # This shouln't happen!
 terrain_img.save("terrain.png")
 heightmap_img.save("heightmap.png")

@@ -10,8 +10,6 @@ class BuildingPlan(object):
         self.center = [a/2 for a in self.layout.shape]
 
 def genBuildings(height_map, terrain_map, number):
-    import time
-    a = time.clock()
     assert height_map.shape == terrain_map.shape
     building_positions = list()
 
@@ -40,5 +38,4 @@ def genBuildings(height_map, terrain_map, number):
         if tryCreateBuilding((t_x, t_y), buildingone):
             building_positions.append((t_x+buildingone.center[0], t_y+buildingone.center[1]))
         attempts += 1
-    print time.clock() - a
     return building_positions
