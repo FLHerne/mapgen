@@ -6,3 +6,5 @@ Generates a wide range of terrain types with different preconditions (e.g. blobb
 Behaviour can be configured by modifying constants.py, better configuration of terrain types is a to-do.
 
 Requires PIL (or Pillow).
+
+N.B. - master is usually broken, use tagged releases for anything.
