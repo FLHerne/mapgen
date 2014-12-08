@@ -1,6 +1,6 @@
 # Side length of generated map.
 # Must be a power of two.
-MAP_SIZE = 256
+MAP_SIZE = 512
 
 # Fraction of map above sea level.
 LAND_PROPORTION = 0.6

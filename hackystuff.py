@@ -1,8 +1,19 @@
+import constants
 import numpy
 
+def neighbours(coord):
+    neighbourlist = []
+    for offset in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
+        nbr_coord = coord[0]+offset[0], coord[1]+offset[1]
+        if  (nbr_coord[0] < 0 or nbr_coord[0] >= constants.MAP_SIZE or
+             nbr_coord[1] < 0 or nbr_coord[1] >= constants.MAP_SIZE):
+            continue
+        neighbourlist.append(nbr_coord)
+    return neighbourlist
+
 class TerrainType:
-    DEEPW = 0
-    WATER = 9
+    DEEPW = 9
+    WATER = 0
     ROCKS = 10
     BOGGY = 11
     GRASS = 1

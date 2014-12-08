@@ -3,6 +3,7 @@ import buildings
 from constants import *
 import diamondsquare
 from hackystuff import *
+import rivers
 import roads
 import terraintypes
 import random
@@ -32,31 +33,32 @@ genFixedRatioMap(height_map, terrain_map, TerrainType.WATER, LAND_PROPORTION+(1-
 waterline = genFixedRatioMap(height_map, terrain_map, TerrainType.GRASS, LAND_PROPORTION)
 
 # Generate snow
-snow_scatter_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, SNOW_WIBBLE_SCALE)
-genFixedRatioMap(snow_scatter_map, terrain_map, TerrainType.SNOWY, SNOW_PROPORTION, req_omap=[(height_map,range(waterline+SNOW_MIN_HEIGHT,256))])
+#snow_scatter_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, SNOW_WIBBLE_SCALE)
+#genFixedRatioMap(snow_scatter_map, terrain_map, TerrainType.SNOWY, SNOW_PROPORTION, req_omap=[(height_map,range(waterline+SNOW_MIN_HEIGHT,256))])
 
 # Generate rocks (on grass, snow and shallow water)
-rock_scatter_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, ROCK_WIBBLE_SCALE)
-genFixedRatioMap(rock_scatter_map, terrain_map, TerrainType.ROCKS, ROCK_PROPORTION_GRASS, require=[TerrainType.GRASS])
-genFixedRatioMap(rock_scatter_map, terrain_map, TerrainType.ROCKS, ROCK_PROPORTION_SNOW, require=[TerrainType.SNOWY])
-genFixedRatioMap(rock_scatter_map, terrain_map, TerrainType.ROCKS, ROCK_PROPORTION_WATER, require=[TerrainType.WATER])
+#rock_scatter_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, ROCK_WIBBLE_SCALE)
+#genFixedRatioMap(rock_scatter_map, terrain_map, TerrainType.ROCKS, ROCK_PROPORTION_GRASS, require=[TerrainType.GRASS])
+#genFixedRatioMap(rock_scatter_map, terrain_map, TerrainType.ROCKS, ROCK_PROPORTION_SNOW, require=[TerrainType.SNOWY])
+#genFixedRatioMap(rock_scatter_map, terrain_map, TerrainType.ROCKS, ROCK_PROPORTION_WATER, require=[TerrainType.WATER])
 
 # Generate sandy beaches
-sand_scatter_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, SAND_WIBBLE_SCALE)
-genFixedRatioMap(sand_scatter_map, terrain_map, TerrainType.SANDY, SAND_PROPORTION, avoid=[TerrainType.ROCKS], req_omap=[(height_map,range(waterline-SAND_MAX_DEPTH, waterline+SAND_MAX_HEIGHT))])
+#sand_scatter_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, SAND_WIBBLE_SCALE)
+#genFixedRatioMap(sand_scatter_map, terrain_map, TerrainType.SANDY, SAND_PROPORTION, avoid=[TerrainType.ROCKS], req_omap=[(height_map,range(waterline-SAND_MAX_DEPTH, waterline+SAND_MAX_HEIGHT))])
 
 # Generate bogs
-bog_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, BOG_WIBBLE_SCALE)
-genFixedRatioMap(bog_map, terrain_map, TerrainType.BOGGY, BOG_PROPORTION, avoid=[TerrainType.ROCKS], req_omap=[(height_map,range(waterline-BOG_MAX_DEPTH, waterline+BOG_MAX_HEIGHT))])
+#bog_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, BOG_WIBBLE_SCALE)
+#genFixedRatioMap(bog_map, terrain_map, TerrainType.BOGGY, BOG_PROPORTION, avoid=[TerrainType.ROCKS], req_omap=[(height_map,range(waterline-BOG_MAX_DEPTH, waterline+BOG_MAX_HEIGHT))])
 
 # Generate trees (on grass and snow)
-tree_scatter_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, TREE_WIBBLE_SCALE)
-genFixedRatioMap(tree_scatter_map, terrain_map, TerrainType.TREES, TREE_PROPORTION_GRASS, require=[TerrainType.GRASS])
-genFixedRatioMap(tree_scatter_map, terrain_map, TerrainType.TREES, TREE_PROPORTION_SNOW, require=[TerrainType.SNOWY])
+#tree_scatter_map = genTerrainMap(MAP_SIZE, SCATTER_WIBBLE_BASE, TREE_WIBBLE_SCALE)
+#genFixedRatioMap(tree_scatter_map, terrain_map, TerrainType.TREES, TREE_PROPORTION_GRASS, require=[TerrainType.GRASS])
+#genFixedRatioMap(tree_scatter_map, terrain_map, TerrainType.TREES, TREE_PROPORTION_SNOW, require=[TerrainType.SNOWY])
 
 # Generate buildings
-buildings = buildings.genBuildings(height_map, terrain_map, NUM_BUILDINGS)
-roads.genRoads(terrain_map, buildings)
+#buildings = buildings.genBuildings(height_map, terrain_map, NUM_BUILDINGS)
+#roads.genRoads(terrain_map, buildings)
+rivers.genRivers(height_map, terrain_map, 40)
 
 heightmap_img = Image.fromarray(height_map.astype(numpy.uint8))
 terrain_colors = numpy.choose(terrain_map, ATypeColors)
