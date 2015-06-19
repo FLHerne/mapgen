@@ -3,7 +3,13 @@ import numpy
 
 
 def conditionMap(in_map, out_map, value, **conditions):
-    """Set out_map to value where in_map is True and all conditions are met"""
+    """
+    Set out_map to value where in_map is True and all conditions are met.
+    Conditions:
+    'require': If provided, only replace where existing value is in list.
+    'avoid': Do not replace values in this list.
+    'req_omap': Like 'require', but for another map, format (omap, [required])
+    """
     ml = [in_map]  # Nasty hack because nonlocal is python3 only.
     assert in_map.shape == out_map.shape
 
