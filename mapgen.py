@@ -15,6 +15,10 @@ def genTerrainMap(size, base_wibble, wibble_scale):
     return values
 
 def genFixedRatioMap(in_map, out_map, value, ratio, **conditions):
+    """Replaces some elements of 'out_map' with 'value'
+    Quote below is from IRC. N.B.: This function is ridiculous.
+
+    Takes a valuemap (heightmap, but not for heights), takes the [n]% of coordinates with the highest values, then sets those coordinates in a different map to some other value while testing for various optional conditions in either that map or yet more. It doesn't just select the top values though, it uses their coordinates to set values in another map based on strange conditions."""
     threshold = numpy.percentile(in_map, ratio*100)
     terraintypes.conditionMap((in_map < threshold), out_map, value, **conditions)
     return int(threshold)
