@@ -39,7 +39,7 @@ def genvaluemap(mapsize, wibbledecay):
         tdrsum = drgrid + numpy.roll(drgrid, 1, axis=1)
         tulsum = ulgrid + numpy.roll(ulgrid, -1, axis=0)
         ttsum = tdrsum+tulsum
-        maparray[stepsize/2:mapsize:stepsize, 0:mapsize:stepsize] = wibbledmean(ltsum)
+        maparray[stepsize/2:mapsize:stepsize, 0:mapsize:stepsize] = wibbledmean(ttsum)
 
     while stepsize >= 2:
         fillsquares()
